@@ -1,0 +1,9 @@
+{
+    "scripts": {
+        "test": "mocha"
+    },
+    "dependencies": {
+        "mocha": "^6.0.2",
+        "nightmare": "^3.0.1"
+    }
+}
