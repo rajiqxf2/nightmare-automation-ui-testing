@@ -1,4 +1,5 @@
 var Nightmare = require('nightmare')
+vo = require('vo')
 var nightmare = Nightmare({ show: true })
 var assert = require('assert')
 var temperature = 0
@@ -8,7 +9,11 @@ var shopping_decision
 var decision = null
 var title = null
 var product_list = null
-var price_selector
+var product = null
+var shopping_button = null
+var minimum_aloe_price = 100000
+var price_list = []
+
 
 function temperature_val(nightmare) {
     return nightmare
@@ -38,6 +43,29 @@ function get_product_list(nightmare) {
         })
 }
 
+function get_product_price(nightmare, price_selector, product_selector) {
+    return nightmare
+        .wait(1500)
+        .evaluate((price_selector) => {
+            return document.querySelector(price_selector).textContent
+        }, price_selector)
+
+}
+
+function get_product_selectors(product, i) {
+    if ([0, 1, 2].includes(i)) {
+        x = 2
+        y = i + (i + 1)
+    } else if ([3, 4, 5].includes(i)) {
+        x = 3
+        y = i - 2
+    }
+    product_selector = ".row:nth-child(" + x + ")>.text-center:nth-child(" + y + ")> .font-weight-bold"
+    price_selector = ".row:nth-child(" + x + ")>.text-center:nth-child(" + y + ")> p:nth-child(3)"
+    button_selector = ".row:nth-child(" + x + ")>.text-center:nth-child(" + y + ") button"
+    return [product_selector, price_selector, button_selector]
+}
+
 describe('Test weather shopper', function() {
     it('load weather shopper with out any error', function(done) {
         //check if weathershopper launch     
@@ -59,7 +87,7 @@ describe('Test weather shopper', function() {
                     console.log("Temperature element found on weathershopper.com")
                         // get hint text on the home page
                     nightmare
-                        .wait(1500)
+                        .wait(3000)
                         .evaluate(function() {
                             return document.querySelector(".octicon-info").getAttribute('data-content')
                         })
@@ -99,8 +127,10 @@ describe('Test weather shopper', function() {
                     console.log('temperature value split: ', temp)
                     if (temp < 19) {
                         decision = shopping[0]
+                        shopping_button = shopping_buttons[0]
                     } else if (temp > 34) {
                         decision = shopping[1]
+                        shopping_button = shopping_buttons[1]
                     } else {
                         console.log('weather is moderate , no shopping !')
                     }
@@ -113,51 +143,26 @@ describe('Test weather shopper', function() {
             })
     })
 
-    it('Shop for moisturizers', function(done) {
+    it('Shop for moisturizers or ', function(done) {
         shopping_decision
             .then(function() {
-                if (decision == shopping[0]) {
-                    nightmare
-                        .wait(1500)
-                        .click(shopping_buttons[0])
-                    get_product_list(nightmare).then(function(product_list) {
-                        console.log('products: ', product_list)
-                        if (product_list.length > 0) {
-                            for (i = 0; i < product_list.length; i++) {
-                                if ([0, 1, 2].includes(i)) {
-                                    x = 2
-                                    y = i + (i + 1)
-                                } else if ([3, 4, 5].includes(i)) {
-                                    x = 3
-                                    y = i - 2
-                                }
-                                product_selector = ".row:nth-child(" + x + ")>.text-center:nth-child(" + y + "> font-weight-bold"
-                                price_selector = ".row:nth-child(" + x + ")>.text-center:nth-child(" + y + "> p:nth-child(3)"
-                                button_selector = ".row:nth-child(" + x + ")>.text-center:nth-child(" + y + ") button"
-                                if (product_list[i].includes('Aloe')) {
-                                    nightmare
-                                        .evaluate(function() {
-                                            return document.querySelector(price_selector).textContent
-                                        })
-                                        .then(function(price) {
-                                            console.log('product name: ', product_list[i])
-                                            console.log('price: ', price)
-                                        })
-                                }
-                                if (product_list[i].includes('Almond')) {
-                                    nightmare
-                                        .evaluate(function() {
-                                            return document.querySelector(price_selector).textContent
-                                        })
-                                        .then(function(price) {
-                                            console.log('product name: ', product_list[i])
-                                            console.log('price: ', price)
-                                        })
-                                }
+                nightmare
+                    .wait(1500)
+                    .click(shopping_button)
+                get_product_list(nightmare).then(function(product_list) {
+                    console.log('products: ', product_list)
+                    if (product_list.length > 0) {
+                        product_list.forEach(function(product, i) {
+                            var selectors = get_product_selectors(product, i)
+                            if (product.includes('Aloe') || product.includes('Almond') || product.includes('SPF-30') || product.includes('SPF-50')) {
+                                console.log('product name: ', product)
+                                get_product_price(nightmare, selectors[1]).then(function(price) {
+                                    console.log('price: ', price)
+                                })
                             }
-                        }
-                    })
-                }
+                        })
+                    }
+                })
             })
         done()
             .catch(error => {
@@ -165,55 +170,4 @@ describe('Test weather shopper', function() {
             })
     })
 
-    it('Shop for sunscreens', function(done) {
-        shopping_decision
-            .then(function() {
-                if (decision == shopping[1]) {
-                    nightmare
-                        .wait(1500)
-                        .click(shopping_buttons[1])
-                    get_product_list(nightmare).then(function(product_list) {
-                        console.log('products: ', product_list)
-                        if (product_list.length > 0) {
-                            for (i = 0; i < product_list.length; i++) {
-                                if ([0, 1, 2].includes(i)) {
-                                    x = 2
-                                    y = i + (i + 1)
-                                } else if ([3, 4, 5].includes(i)) {
-                                    x = 3
-                                    y = i - 2
-                                }
-                                product_selector = ".row:nth-child(" + x + ")>.text-center:nth-child(" + y + "> font-weight-bold"
-                                price_selector = ".row:nth-child(" + x + ")>.text-center:nth-child(" + y + "> p:nth-child(3)"
-                                button_selector = ".row:nth-child(" + x + ")>.text-center:nth-child(" + y + ") button"
-                                if (product_list[i].includes('SPF-50')) {
-                                    nightmare
-                                        .evaluate(function() {
-                                            return document.querySelector(price_selector).textContent
-                                        })
-                                        .then(function(price) {
-                                            console.log('product name: ', product_list[i])
-                                            console.log('price: ', price)
-                                        })
-                                }
-                                if (product_list[i].includes('SPF-30')) {
-                                    nightmare
-                                        .evaluate(function() {
-                                            return document.querySelector(price_selector).textContent
-                                        })
-                                        .then(function(price) {
-                                            console.log('product name: ', product_list[i])
-                                            console.log('price: ', price)
-                                        })
-                                }
-                            }
-                        }
-                    })
-                }
-            })
-        done()
-            .catch(error => {
-                console.error('Getting temperature value failed:', error)
-            })
-    })
 })
