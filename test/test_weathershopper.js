@@ -1,23 +1,49 @@
 /* 
-Try automating https://weathershopper.com basic testcases using nightmare
+Automating https://weathershopper.com basic use cases using nightmarejs
 1. Go to home page - Done
 2. Check temperature value and hint text - Done
 3. Based on hint text navigate to moisturizers or sunscreens shopping page - Done
-4. Add products to cart based on hint text - InProgress
-5. Submit cart product with some test stripe card details
+4. Add products to cart based on hint text conditions - Done
+5. Submit cart product with some test stripe card details - Not Done
 test credit cards: Visa: 4242 4242 4242 4242. Mastercard: 5555 5555 5555 4444. American Express: 3782 822463 10005.
-6. Check for successful payment confirmation 
 
-Some Pit falls of nightmare 
-1. nightmare instance inside a loop does not work , need to use work around like array.reduce()
-2. document.queryselectAll() does not return web elements using nightmare unless mapping it to some attribute
-3. Nightmare does not let you store element attributes outside the nightmare scope
-References 
-https://github.com/rosshinkley/nightmare-examples/blob/master/docs/common-pitfalls/async-operations-loops.md
+Listed down some of the nightmarejs pitfalls and limitations that I have come across,
+during the Nightmare.js automation proof of concept using weathershopper.com test application  
+
+1. nightmare instance inside a loop does not work(it returns first iteration results for every iteration),
+need to use work around like Array.reduce (Vanilla JS) or vo
+Reference: https://github.com/rosshinkley/nightmare-examples/blob/master/docs/common-pitfalls/async-operations-loops.md
+
+2. document.queryselectAll() does not return web elements using nightmare unless mapping it to some attribute 
+(DOM elements and DOM element lists are not serializable) 
+https://github.com/segmentio/nightmare/issues/567#issuecomment-209533871
+https://github.com/segmentio/nightmare/issues/1500
+
+3. Getting the global variables inside the nightmare evaluate scope is not straight forward
+https://github.com/segmentio/nightmare/issues/89
+
+3. Nightmare does not pass element attributes outside the nightmare scope 
+one of the work around is to save the nightmare response and reuse 
+https://github.com/rosshinkley/nightmare-examples/blob/master/docs/known-issues/globally-defined-variables.md
+
+4. Nightmare function 'evaluate' will return value only to 'then' caller
+https://github.com/segmentio/nightmare/issues/1131
+
+4. Asynchronous operations can lead to simultaneous calls causing early returns with wrong results
+Reference: https://github.com/segmentio/nightmare/issues/493
+
+5. Need to install nightmare iframe manager separately to work with iframe
+Reference: https://github.com/rosshinkley/nightmare-iframe-manager 
 */
 
 var Nightmare = require('nightmare')
-var nightmare = Nightmare({ show: true })
+require('nightmare-iframe-manager')(Nightmare)
+var nightmare = Nightmare({
+    show: true,
+    webPreferences: {
+        webSecurity: false
+    }
+})
 var assert = require('assert')
 var temperature = 0
 var shopping = ['buy moisturizers', 'buy sunscreens']
@@ -25,16 +51,14 @@ var shopping_buttons = ['div:nth-child(1) > a button', 'div:nth-child(2) > a but
 var decision
 var title = null
 var shopping_button = null
-var min_aloe_price = 100000
-var min_almond_price = 100000
-var min_spf30_price = 100000
-var min_spf50_price = 100000
-var min_price_aloe_products = []
-var min_price_almond_products = []
-var min_price_spf30_products = []
-var min_price_spf50_products = []
+var min_product1_price = 100000
+var min_product2_price = 100000
+var min_product1 = []
+var min_product2 = []
 var selectors = []
-
+var shopping_cart
+var shopping_products
+var frame
 
 function temperature_val(nightmare) {
     //return temperature value from home page
@@ -71,6 +95,7 @@ function get_product_price(nightmare, selectors) {
     //Regex used to return integer value from price because sunscreen has both "Price: Rs." and "Price:"
     return nightmare
         .wait(1500)
+        .exists('#temperature')
         .evaluate((selectors) => {
             price = document.querySelector(selectors[0]).textContent
             price = price.trim()
@@ -174,68 +199,74 @@ describe('Test weather shopper', function() {
             })
     })
 
-    it('Shop for moisturizers or sunscreens', function(done) {
-        //this test step is continuation of above test step nightmare instance "shopping decision"
-        //iterate through product list and get matching products
-        //iterate through nightmare does not work in for or array loop , need to use array.reduce or any other additional package
-        shopping_decision.then(function() {
-            nightmare
+    it('Navigate to shopping page', function(done) {
+        //Navigate to shopping moisturizers/sunscreens page
+        shopping_page = shopping_decision.then(function() {
+            return nightmare
                 .wait(1500)
                 .click(shopping_button)
-            get_product_list(nightmare).then(function(product_list) {
-                console.log('products: ', product_list)
-                if (product_list.length > 0) {
-                    product_list.reduce(function(accumulator, product, i) {
-                        return accumulator.then(function() {
-                            product = product.toLowerCase()
-                            selectors = get_product_selectors(product, i)
-                            return get_product_price(nightmare, selectors).then(function(price) {
-                                if (decision.includes('moisturizer')) {
-                                    if (price < min_aloe_price && product.includes('aloe')) {
-                                        min_aloe_price = price
-                                        min_price_aloe_products = [product, price, selectors[1]]
-                                    }
-                                    if (price < min_almond_price && product.includes('almond')) {
-                                        min_almond_price = price
-                                        min_price_almond_products = [product, price, selectors[1]]
-                                    }
-                                } else if (decision.includes('sunscreen')) {
-                                    if (price < min_spf30_price && product.includes('spf-30')) {
-                                        min_spf30_price = price
-                                        min_price_spf30_products = [product, price, selectors[1]]
-                                    }
-                                    if (price < min_spf50_price && product.includes('spf-50')) {
-                                        min_spf50_price = price
-                                        min_price_spf50_products = [product, price, selectors[1]]
-                                    }
-                                }
-                            })
-                        })
-                    }, Promise.resolve([])).then(function() {
-                        //results contains the array of all of the finished promise results,
-                        //in this case, the titles from every page visited
-                        //you could do something with that here
-                        if (decision.includes('moisturizer')) {
-                            console.log(min_price_aloe_products[2])
-                            nightmare
-                                .wait(1500)
-                                .click(min_price_aloe_products[2])
-                                .click(min_price_almond_products[2])
-                        } else if (decision.includes('sunscreen')) {
-                            console.log(min_price_spf30_products[2])
-                            nightmare
-                                .wait(1500)
-                                .click(min_price_spf30_products[2])
-                                .click(min_price_spf50_products[2])
-                        }
-                    })
-                }
-            })
         })
         done()
             .catch(error => {
                 console.error('Shopping products based on temperature failed:', error)
             })
     })
+
+    it('Select minimum price moisturizer or sunscreen products', function(done) {
+        //this test step is continuation of above test step nightmare instance "shopping decision"
+        //iterate through product list and get matching products
+        //iterate through nightmare does not work in for or array loop , need to use array.reduce or any other additional package
+        shopping_products = shopping_page.then(function() {
+            return get_product_list(nightmare).then(function(product_list) {
+                if (product_list.length > 0) {
+                    return product_list.reduce(function(accumulator, product, i) {
+                        return accumulator.then(function() {
+                            product = product.toLowerCase()
+                            selectors = get_product_selectors(product, i)
+                            console.log('product: ', product)
+                            return get_product_price(nightmare, selectors).then(function(price) {
+                                console.log('price: ', price)
+                                if ((product.includes('aloe') || product.includes('spf-30')) && price < min_product1_price) {
+                                    min_product1_price = price
+                                    min_product1 = [product, price, selectors[1]]
+                                }
+                                if ((product.includes('almond') || product.includes('spf-50')) && price < min_product2_price) {
+                                    min_product2_price = price
+                                    min_product2 = [product, price, selectors[1]]
+                                }
+                            })
+                        })
+                    }, Promise.resolve())
+                }
+            })
+
+        })
+        done()
+            .catch(error => {
+                console.error('Shopping products based on temperature failed:', error)
+            })
+    })
+
+    it('Add shopping products and navigate to shopping cart', function(done) {
+        //Add products to the cart
+        shopping_cart = shopping_products.then(function() {
+            console.log('Selected minimum price products are ', min_product1[0], min_product1[1])
+            console.log('And ', min_product2[0], min_product2[1])
+            return nightmare
+                .wait(1500)
+                .click(min_product1[2])
+                .click(min_product2[2])
+                .wait(1500)
+                .click('.navbar-nav>button')
+                .wait(5000)
+                .end()
+        })
+
+        done()
+            .catch(error => {
+                console.error('Shopping products based on temperature failed:', error)
+            })
+    })
+
 
 })
