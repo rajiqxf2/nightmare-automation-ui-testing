@@ -1,5 +1,5 @@
 /* 
-Automating https://weathershopper.com use cases using nightmarejs
+Automating http://weathershopper.pythonanywhere.com/ use cases using nightmarejs
 1. Go to home page - Done
 2. Check temperature value and hint text - Done
 3. Based on hint text navigate to moisturizers or sunscreens shopping page - Done
