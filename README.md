@@ -22,7 +22,7 @@ To run these tests you need to install mocha testframe work too
 $ npm install --save-dev mocha 
 
 
-Automating https://weathershopper.com use cases using nightmarejs
+Automating http://weathershopper.pythonanywhere.com/ use cases using nightmarejs
 
 1. Go to home page - Done
 2. Check temperature value and hint text - Done
@@ -34,35 +34,38 @@ Listed down some of the nightmarejs pitfalls and limitations that I have come ac
 
 1. nightmare instance inside a loop does not work(it returns first iteration results for every iteration),
 need to use work around like Array.reduce (Vanilla JS) or vo
-Reference: https://github.com/rosshinkley/nightmare-examples/blob/master/docs/common-pitfalls/async-operations-loops.md
+
+https://github.com/rosshinkley/nightmare-examples/blob/master/docs/common-pitfalls/async-operations-loops.md
 
 2. document.queryselectAll() does not return web elements using nightmare unless mapping it to some attribute 
 (DOM elements and DOM element lists are not serializable) 
+
 https://github.com/segmentio/nightmare/issues/567#issuecomment-209533871
 https://github.com/segmentio/nightmare/issues/1500
 
 3. Getting the global variables inside the nightmare evaluate scope is not straight forward
+
 https://github.com/segmentio/nightmare/issues/89
 
-3. Nightmare does not pass element attributes outside the nightmare scope, one of the work around is to save the nightmare response and reuse 
+4. Nightmare does not pass element attributes outside the nightmare scope, one of the work around is to save the nightmare response and reuse 
+
 https://github.com/rosshinkley/nightmare-examples/blob/master/docs/known-issues/globally-defined-variables.md
 
-4. Nightmare function 'evaluate' will return value only to 'then' caller
+5. Nightmare function 'evaluate' will return value only to 'then' caller
+
 https://github.com/segmentio/nightmare/issues/1131
 
-4. Asynchronous operations can lead to simultaneous calls causing early returns with wrong results
-Reference: https://github.com/segmentio/nightmare/issues/493
+6. Asynchronous operations can lead to simultaneous calls causing early returns with wrong results
 
-5. Need to install nightmare iframe manager separately to work with iframe
-Reference: https://github.com/rosshinkley/nightmare-iframe-manager 
+https://github.com/segmentio/nightmare/issues/493
+
+7. Need to install nightmare iframe manager separately to work with iframe
+
+https://github.com/rosshinkley/nightmare-iframe-manager 
 
 
 # nightmare test run
 
 npm test
 
-
-
-
-	
-	
+![ nightmare test run screenshot ](https://github.com/rajiqxf2/nightmare-automation-ui-testing/blob/master/images/nightmare-test-run.png)
