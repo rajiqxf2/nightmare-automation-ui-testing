@@ -1,5 +1,5 @@
 /* 
-Automating https://weathershopper.com basic use cases using nightmarejs
+Automating https://weathershopper.com use cases using nightmarejs
 1. Go to home page - Done
 2. Check temperature value and hint text - Done
 3. Based on hint text navigate to moisturizers or sunscreens shopping page - Done
@@ -37,14 +37,9 @@ Reference: https://github.com/rosshinkley/nightmare-iframe-manager
 */
 
 var Nightmare = require('nightmare')
-require('nightmare-iframe-manager')(Nightmare)
 var nightmare = Nightmare({
     show: true,
-    webPreferences: {
-        webSecurity: false
-    }
 })
-var assert = require('assert')
 var temperature = 0
 var shopping = ['buy moisturizers', 'buy sunscreens']
 var shopping_buttons = ['div:nth-child(1) > a button', 'div:nth-child(2) > a button']
@@ -56,9 +51,6 @@ var min_product2_price = 100000
 var min_product1 = []
 var min_product2 = []
 var selectors = []
-var shopping_cart
-var shopping_products
-var frame
 
 function temperature_val(nightmare) {
     //return temperature value from home page
@@ -76,7 +68,7 @@ function web_page_title(url) {
         .goto(url)
         .wait(1500)
         .evaluate(function() {
-            title = document.querySelector('title').textContent
+            var title = document.querySelector('title').textContent
             return title
         })
 }
