@@ -22,7 +22,7 @@ To run these tests you need to install mocha testframe work too
 $ npm install --save-dev mocha 
 
 
-Automating https://weathershopper.com use cases using nightmarejs
+Automating http://weathershopper.pythonanywhere.com/ use cases using nightmarejs
 
 1. Go to home page - Done
 2. Check temperature value and hint text - Done
