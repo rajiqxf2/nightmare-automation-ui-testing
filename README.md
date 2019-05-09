@@ -28,6 +28,8 @@ Automating http://weathershopper.pythonanywhere.com/ use cases using nightmarejs
 4. Add products to cart based on hint text conditions - Done
 5. Submit cart product with some test stripe card details - Not Done
 
+# nightmare limitations
+
 Listed down some of the nightmarejs pitfalls and limitations that I have come across during the Nightmare.js automation proof of concept using weathershopper.com test application  
 
 1. nightmare instance inside a loop does not work(it returns first iteration results for every iteration),
