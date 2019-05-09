@@ -1,4 +1,4 @@
-# nightmare-sample-tests
+# nightmare-automation-ui-testing
 
 When I wanted to work on UI automation proof of concept using nightmarejs tool , I thought to choose one web application that can expose most of the nightmarejs usage methods , potential pit falls and limitations 
 
