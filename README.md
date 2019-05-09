@@ -61,7 +61,7 @@ Reference: https://github.com/rosshinkley/nightmare-iframe-manager
 
 npm test
 
-
+![nightmare test run] (https://github.com/rajiqxf2/nightmare-automation-ui-testing/blob/master/images/nightmare-test-run.png)
 
 
 	
