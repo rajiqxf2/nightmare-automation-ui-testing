@@ -1,8 +1,8 @@
 # nightmare-automation-ui-testing
 
-When I wanted to work on UI automation proof of concept using nightmarejs tool , I thought to choose one web application that can expose most of the nightmarejs usage methods , potential pit falls and limitations 
+When I had to work on UI automation proof of concept using nightmarejs automation library , I thought to choose one web application that can expose most of the nightmarejs usage methods , potential pit falls and limitations 
 
-Arunkumar muralidharan at Qxf2 suggested me to use https://weathershopper.pythonanywhere.com application which he has developed for teaching the QA automation purpose. Their goal was to develop a small web application that can help testers learn automation tool that can expose most of the programming challenges with respect to automation in one go 
+Arunkumar muralidharan at Qxf2 suggested me to use https://weathershopper.pythonanywhere.com application which he has developed for training purpose on QA automation. Their goal was to develop a small web application that can help testers learn automation tool which can expose most of the programming challenges with respect to automation in one go 
 
 I must say his application helped me in understanding and doing thorough proof of concept for nightmarejs tool 
 
